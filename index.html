@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hunt Club Crab Fest</title>
+
+<!-- ============================================================
+  FIREBASE SETUP — DO THIS ONCE (~5 minutes)
+  ============================================================
+  1. Go to https://console.firebase.google.com
+  2. Click "Add project" → name it (e.g. "hunt-club-crab-fest") → Continue
+  3. Disable Google Analytics if prompted → Create project
+  4. In the left sidebar click "Build" → "Realtime Database" → Create database
+     → Choose a region → "Start in test mode" → Enable
+  5. Click the gear icon ⚙ (top-left) → "Project settings"
+     → Scroll to "Your apps" → click </> (Web) → register app (any nickname)
+     → Copy the firebaseConfig values shown
+  6. Paste your values into FIREBASE_CONFIG below (replace each "YOUR_..." placeholder)
+  7. Save this file, rename to index.html, and push to your GitHub Pages repo
+  ============================================================ -->
+
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#FAF3E8;color:#2A1A0F;min-height:100vh}
+
+  .header{background:linear-gradient(135deg,#8B4A1F,#B5541A);color:#fff;padding:2rem 1rem 1.5rem;text-align:center}
+  .header h1{font-size:2rem;font-weight:700;letter-spacing:-0.5px}
+  .header .subtitle{font-size:1.1rem;opacity:.9;margin-top:.4rem}
+  .crab-emoji{font-size:2rem}
+
+  .container{max-width:860px;margin:0 auto;padding:1.5rem 1rem 3rem}
+
+  .banner{background:#FBEAD3;border:1px solid #E8A33D;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.25rem;font-size:13px;color:#4A2A0C;line-height:1.7}
+  .banner strong{display:block;font-size:14px;margin-bottom:6px;color:#7A3B12}
+  .banner code{background:#fff;padding:1px 5px;border-radius:4px;font-family:monospace;font-size:12px;border:.5px solid #E8A33D}
+  .banner ol{margin:8px 0 0 18px}
+
+  .source-note{background:#FBEAD3;border:1px solid #E8A33D;border-radius:10px;padding:.85rem 1.1rem;margin-bottom:1.25rem;font-size:13px;color:#4A2A0C;line-height:1.6}
+  .source-note a{color:#8B3A1A;font-weight:600;text-decoration:underline}
+
+  .summary-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.25rem}
+  .stat-card{background:#fff;border-radius:10px;border:.5px solid #D9C4A8;padding:1rem 1.1rem}
+  .stat-card .lbl{font-size:11px;color:#7A6A54;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+  .stat-card .val{font-size:24px;font-weight:600;color:#B5541A}
+  .stat-card .sub{font-size:12px;color:#8C7A62;margin-top:2px}
+
+  .card{background:#fff;border-radius:12px;border:.5px solid #D9C4A8;padding:1.25rem 1.5rem;margin-bottom:1.25rem}
+  .card h2{font-size:1rem;font-weight:600;margin-bottom:1rem;color:#7A3B12;display:flex;align-items:center;gap:8px}
+
+  .sec-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:8px}
+  .sec-hdr h2{margin-bottom:0}
+
+  .live-wrap{display:flex;align-items:center;gap:5px;font-size:12px;color:#7A6A54}
+  .dot{width:8px;height:8px;border-radius:50%;background:#E8A33D;animation:pulse 2s infinite}
+  .dot.off{background:#B23A2E;animation:none}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+  .form-row{display:flex;gap:10px;flex-wrap:wrap}
+  .form-row input,.form-row select{flex:1;min-width:140px;padding:9px 12px;border:.5px solid #C7B394;border-radius:8px;font-size:14px;background:#fff;color:#2A1A0F;outline:none;transition:border-color .15s}
+  .form-row input:focus,.form-row select:focus{border-color:#B5541A}
+
+  .btn{padding:9px 18px;border-radius:8px;border:none;font-size:14px;font-weight:500;cursor:pointer;transition:background .15s,transform .1s}
+  .btn:active{transform:scale(.97)}
+  .btn-primary{background:#B5541A;color:#fff}
+  .btn-primary:hover{background:#8B3A1A}
+  .btn-secondary{background:#FBEAD3;color:#7A3B12;border:.5px solid #E8B15A}
+  .btn-secondary:hover{background:#F0D9A8}
+  .btn-danger{background:#fff;color:#A32D2D;border:.5px solid rgba(178,58,46,.35);font-size:12px;padding:4px 10px}
+  .btn-danger:hover{background:#FBEAEA}
+  .btn-share{background:#6B4423;color:#fff}
+  .btn-share:hover{background:#4A2F18}
+  .btn-sm{padding:6px 14px;font-size:13px}
+  .switch-btn{font-size:12px;color:#8B3A1A;cursor:pointer;text-decoration:underline;background:none;border:none;margin-left:6px}
+
+  .order-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px}
+  .order-field label{display:block;font-size:12px;font-weight:600;color:#7A6A54;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+  .order-field select,.order-field input[type=text]{width:100%;padding:9px 12px;border:.5px solid #C7B394;border-radius:8px;font-size:14px;background:#fff;color:#2A1A0F;outline:none}
+  .order-field select:focus,.order-field input[type=text]:focus{border-color:#B5541A}
+  .order-cost{font-size:12px;color:#B5541A;margin-top:4px;font-weight:500}
+
+  .cost-breakdown{border-top:.5px solid #E8DCC4;margin-top:1rem;padding-top:1rem;font-size:13px}
+  .cost-line{display:flex;justify-content:space-between;padding:3px 0;color:#4A2A0C}
+  .cost-line.total{font-weight:700;color:#7A3B12;border-top:.5px solid #E8DCC4;margin-top:6px;padding-top:8px;font-size:15px}
+
+  .attendees-list{display:flex;flex-direction:column;gap:8px}
+  .att-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;background:#FAF3E8;border:.5px solid #D9C4A8}
+  .avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#7A3B12;flex-shrink:0}
+  .att-info{flex:1}
+  .att-name{font-size:14px;font-weight:500}
+  .att-guests{font-size:12px;color:#7A6A54}
+  .att-items{font-size:11px;color:#B5541A;margin-top:2px}
+
+  .share-area{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+  .share-url{flex:1;padding:8px 12px;border:.5px solid #C7B394;border-radius:8px;font-size:12px;background:#FAF3E8;color:#7A6A54;font-family:monospace;word-break:break-all;min-width:0}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#7A3B12;color:#fff;padding:10px 22px;border-radius:20px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .3s;z-index:999;white-space:nowrap}
+  .toast.show{opacity:1}
+
+  .loading{text-align:center;padding:2.5rem;color:#8C7A62;font-size:14px}
+  .spinner{width:28px;height:28px;border:2px solid #D9C4A8;border-top-color:#B5541A;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  @media(max-width:500px){
+    .stat-card .val{font-size:19px}
+    .summary-bar{grid-template-columns:1fr 1fr}
+    .order-grid{grid-template-columns:1fr}
+    .header h1{font-size:1.5rem}
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="crab-emoji">🦀</div>
+  <h1>Hunt Club Crab Fest</h1>
+  <div class="subtitle">Saturday, Sep 19, 2026 &bull; 4:00 PM</div>
+</div>
+
+<div class="container">
+
+  <div class="banner" id="setupBanner" style="display:none">
+    <strong>⚠️ Firebase not configured — running in local demo mode</strong>
+    To enable real-time sync across all users, open this file in a text editor, find
+    <code>FIREBASE_CONFIG</code> near the top of the &lt;script&gt; block, and replace
+    each <code>YOUR_...</code> placeholder with your Firebase project values.
+    See the comment block at the very top of the file for step-by-step instructions.
+  </div>
+
+  <div class="loading" id="loadingDiv">
+    <div class="spinner"></div>
+    Connecting…
+  </div>
+
+  <div id="app" style="display:none">
+
+    <div class="source-note">
+      🦀 Snow crab legs &amp; crawdaddy are being sourced from
+      <a href="https://www.buckscountyseafood.com/" target="_blank" rel="noopener">Bucks County Seafood</a>.
+      Enter how many pounds you'd like below and we'll tally the order.
+    </div>
+
+    <div class="summary-bar">
+      <div class="stat-card">
+        <div class="lbl">Total Attending</div>
+        <div class="val" id="statPeople">0</div>
+        <div class="sub" id="statPeopleSub">0 members + 0 guests</div>
+      </div>
+      <div class="stat-card">
+        <div class="lbl">Lbs Ordered</div>
+        <div class="val" id="statLbs">0</div>
+        <div class="sub" id="statLbsSub">crab + crawdaddy</div>
+      </div>
+      <div class="stat-card">
+        <div class="lbl">Total Cost</div>
+        <div class="val" id="statCost">$0.00</div>
+        <div class="sub" id="statCostSub">incl. 7% tax</div>
+      </div>
+    </div>
+
+    <!-- Identity card -->
+    <div class="card">
+      <div class="sec-hdr">
+        <h2>👤 Who are you?</h2>
+        <div class="live-wrap"><span class="dot" id="liveDot"></span><span id="liveLabel">Live</span></div>
+      </div>
+      <div id="curUserRow" style="display:none;margin-bottom:12px;font-size:14px;color:#7A6A54">
+        Signed in as: <strong id="curUserName" style="color:#7A3B12"></strong>
+        <button class="switch-btn" onclick="clearUser()">switch user</button>
+      </div>
+      <div id="pickUserRow" style="display:none;margin-bottom:12px">
+        <div class="form-row">
+          <select id="pickSel"><option value="">-- Select your name --</option></select>
+          <button class="btn btn-primary" onclick="loginExisting()">Select</button>
+        </div>
+        <div style="margin-top:8px;font-size:13px;color:#8C7A62">Or add yourself as a new attendee below ↓</div>
+      </div>
+      <div class="form-row" id="addUserRow">
+        <input type="text" id="newName" placeholder="Your name" maxlength="40" onkeydown="if(event.key==='Enter')addUser()" />
+        <input type="number" id="newGuests" placeholder="# guests" min="0" max="30" value="0" style="max-width:100px" />
+        <button class="btn btn-primary" onclick="addUser()">Join the party!</button>
+      </div>
+    </div>
+
+    <!-- Order card -->
+    <div class="card" id="orderCard" style="display:none">
+      <h2>🦀 Your Crab Fest Order</h2>
+      <div class="order-grid">
+        <div class="order-field">
+          <label>Snow Crab Legs (lbs) — $10.99/lb</label>
+          <select id="crabLbs" onchange="saveOrder()"></select>
+        </div>
+        <div class="order-field">
+          <label>Crawdaddy (lbs) — $4.99/lb</label>
+          <select id="crawLbs" onchange="saveOrder()"></select>
+        </div>
+      </div>
+      <div class="order-field" style="margin-bottom:6px">
+        <label>Side dish you're bringing</label>
+        <input type="text" id="sideDish" placeholder="e.g. Corn on the cob, coleslaw..." maxlength="80" onchange="saveOrder()" onkeydown="if(event.key==='Enter'){this.blur();}" />
+      </div>
+      <div class="order-cost" id="orderCost"></div>
+    </div>
+
+    <!-- Cost breakdown card -->
+    <div class="card">
+      <h2>💰 Order Cost Summary</h2>
+      <div class="cost-breakdown" id="costBreakdown"></div>
+    </div>
+
+    <!-- Attendees card -->
+    <div class="card">
+      <h2>🎉 Who's coming?</h2>
+      <div class="attendees-list" id="attendeesList">
+        <div style="font-size:14px;color:#8C7A62">No one signed up yet — be the first!</div>
+      </div>
+    </div>
+
+    <!-- Share card -->
+    <div class="card">
+      <h2>🔗 Share this page</h2>
+      <p style="font-size:13px;color:#7A6A54;margin-bottom:10px">Send this link — everyone sees the same live list in real time.</p>
+      <div class="share-area">
+        <div class="share-url" id="shareUrl"></div>
+        <button class="btn btn-share" onclick="copyLink()">Copy Link</button>
+      </div>
+    </div>
+
+  </div><!-- /app -->
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+// ── FIREBASE CONFIG ──────────────────────────────────────────
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBWJzDULZwLoTmEvbN2m3QQTv9jiiYaf6c",
+  authDomain: "hunt-club-crab-fest.firebaseapp.com",
+  databaseURL: "https://hunt-club-crab-fest-default-rtdb.firebaseio.com",
+  projectId: "hunt-club-crab-fest",
+  storageBucket: "hunt-club-crab-fest.firebasestorage.app",
+  messagingSenderId: "780965060892",
+  appId: "1:780965060892:web:ddf6261a4650361a371ad9"
+};
+// ────────────────────────────────────────────────────────────
+
+const CONFIGURED = !FIREBASE_CONFIG.apiKey.includes('YOUR_');
+const DB_PATH     = 'hunt_club_crab_fest_2026';
+const CRAB_PRICE  = 10.99;
+const CRAW_PRICE  = 4.99;
+const TAX_RATE    = 0.07;
+const MAX_LBS     = 20;
+
+let db, attRef;
+let state = { attendees:{} };
+let currentUser = sessionStorage.getItem('crabfest_user') || null;
+
+// ── helpers ──────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+function initials(n){ return n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
+function avatarBg(n){
+  const c=['#F0D9A8','#F5C48A','#E8A33D','#D98C4A','#C97B5F','#E3B778'];
+  let h=0; for(let i=0;i<n.length;i++) h=(h*31+n.charCodeAt(i))&0xffff;
+  return c[h%c.length];
+}
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); }
+function safeKey(n){ return n.replace(/[.#$[\]/\s]/g,'_'); }
+function money(n){ return '$'+n.toFixed(2); }
+function personCost(a){
+  const crab=(a.crabLbs||0)*CRAB_PRICE;
+  const craw=(a.crawLbs||0)*CRAW_PRICE;
+  return crab+craw;
+}
+
+// ── storage abstraction (Firebase or localStorage fallback) ──
+function writeAtt(key, val){
+  if(CONFIGURED) attRef.child(key).set(val);
+  else { state.attendees[key]=val; demoSave(); render(); }
+}
+function delAtt(key){
+  if(CONFIGURED) attRef.child(key).remove();
+  else { delete state.attendees[key]; demoSave(); render(); }
+}
+function demoSave(){
+  try{ localStorage.setItem('crabfest_demo_26', JSON.stringify({attendees:state.attendees})); }catch(e){}
+}
+
+// ── populate lb dropdowns (integers 0..MAX_LBS) ───────────────
+function fillLbSelect(sel){
+  sel.innerHTML='';
+  for(let i=0;i<=MAX_LBS;i++){
+    const o=document.createElement('option'); o.value=i; o.textContent=i+' lb'+(i!==1?'s':'');
+    sel.appendChild(o);
+  }
+}
+
+// ── init ─────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  fillLbSelect($('crabLbs'));
+  fillLbSelect($('crawLbs'));
+
+  if(CONFIGURED){
+    firebase.initializeApp(FIREBASE_CONFIG);
+    db     = firebase.database();
+    attRef = db.ref(DB_PATH+'/attendees');
+
+    attRef.on('value', snap=>{ state.attendees = snap.val()||{}; render(); });
+
+    db.ref('.info/connected').on('value', snap=>{
+      const on = snap.val();
+      $('liveDot').classList.toggle('off',!on);
+      $('liveLabel').textContent = on ? 'Live' : 'Offline';
+    });
+  } else {
+    $('setupBanner').style.display='block';
+    try{ const s=localStorage.getItem('crabfest_demo_26'); if(s){ const p=JSON.parse(s); state=p; } }catch(e){}
+    $('liveDot').classList.add('off');
+    $('liveLabel').textContent='Local only';
+    render();
+  }
+  $('loadingDiv').style.display='none';
+  $('app').style.display='block';
+  $('shareUrl').textContent=location.href;
+});
+
+// ── actions ──────────────────────────────────────────────────
+function addUser(){
+  const name   = $('newName').value.trim();
+  const guests = parseInt($('newGuests').value)||0;
+  if(!name){ toast('Please enter your name'); return; }
+  const dup = Object.values(state.attendees).find(a=>a.name.toLowerCase()===name.toLowerCase());
+  if(dup){ toast('That name is already taken!'); return; }
+  writeAtt(safeKey(name), {name, guests, joinedAt:Date.now(), crabLbs:0, crawLbs:0, sideDish:''});
+  currentUser=name; sessionStorage.setItem('crabfest_user',name);
+  $('newName').value=''; $('newGuests').value='0';
+  toast('Welcome, '+name+'! 🦀');
+}
+
+function loginExisting(){
+  const name=$('pickSel').value;
+  if(!name){ toast('Please select your name'); return; }
+  currentUser=name; sessionStorage.setItem('crabfest_user',name);
+  toast('Welcome back, '+name+'!'); render();
+}
+
+function clearUser(){
+  currentUser=null; sessionStorage.removeItem('crabfest_user'); render();
+}
+
+function saveOrder(){
+  if(!currentUser) return;
+  const key=safeKey(currentUser);
+  const existing=state.attendees[key]; if(!existing) return;
+  const crabLbs=parseInt($('crabLbs').value)||0;
+  const crawLbs=parseInt($('crawLbs').value)||0;
+  const sideDish=$('sideDish').value.trim();
+  writeAtt(key, {...existing, crabLbs, crawLbs, sideDish});
+}
+
+function removeAttendee(name){
+  if(!confirm('Remove '+name+' from the list?')) return;
+  delAtt(safeKey(name));
+  if(currentUser===name) clearUser();
+}
+
+function copyLink(){
+  navigator.clipboard.writeText(location.href)
+    .then(()=>toast('Link copied to clipboard!'))
+    .catch(()=>toast('Copy the URL from the box above'));
+}
+
+// ── render ───────────────────────────────────────────────────
+function render(){
+  const attendees = Object.values(state.attendees||{});
+  const members    = attendees.length;
+  const guests     = attendees.reduce((s,a)=>s+(a.guests||0),0);
+  const totalCrab  = attendees.reduce((s,a)=>s+(a.crabLbs||0),0);
+  const totalCraw  = attendees.reduce((s,a)=>s+(a.crawLbs||0),0);
+  const subtotal   = attendees.reduce((s,a)=>s+personCost(a),0);
+  const tax        = subtotal*TAX_RATE;
+  const grandTotal = subtotal+tax;
+
+  $('statPeople').textContent    = members+guests;
+  $('statPeopleSub').textContent = members+' member'+(members!==1?'s':'')+' + '+guests+' guest'+(guests!==1?'s':'');
+  $('statLbs').textContent       = (totalCrab+totalCraw)+' lbs';
+  $('statLbsSub').textContent    = totalCrab+' crab + '+totalCraw+' crawdaddy';
+  $('statCost').textContent      = money(grandTotal);
+  $('statCostSub').textContent   = 'incl. 7% tax';
+
+  // Cost breakdown card
+  const crabCost = totalCrab*CRAB_PRICE;
+  const crawCost = totalCraw*CRAW_PRICE;
+  $('costBreakdown').innerHTML = `
+    <div class="cost-line"><span>Snow crab legs — ${totalCrab} lbs × ${money(CRAB_PRICE)}</span><span>${money(crabCost)}</span></div>
+    <div class="cost-line"><span>Crawdaddy — ${totalCraw} lbs × ${money(CRAW_PRICE)}</span><span>${money(crawCost)}</span></div>
+    <div class="cost-line"><span>Subtotal</span><span>${money(subtotal)}</span></div>
+    <div class="cost-line"><span>Tax (7%)</span><span>${money(tax)}</span></div>
+    <div class="cost-line total"><span>Total</span><span>${money(grandTotal)}</span></div>`;
+
+  // User section
+  if(currentUser){
+    $('curUserRow').style.display='block';
+    $('curUserName').textContent=currentUser;
+    $('pickUserRow').style.display='none';
+    $('addUserRow').style.display='none';
+
+    const me = state.attendees[safeKey(currentUser)];
+    if(me){
+      $('orderCard').style.display='block';
+      $('crabLbs').value = me.crabLbs||0;
+      $('crawLbs').value = me.crawLbs||0;
+      $('sideDish').value = me.sideDish||'';
+      $('orderCost').textContent = 'Your order total: '+money(personCost(me));
+    }
+  } else {
+    $('curUserRow').style.display='none';
+    $('addUserRow').style.display='flex';
+    $('orderCard').style.display='none';
+    if(attendees.length){
+      $('pickUserRow').style.display='block';
+      const sel=$('pickSel');
+      sel.innerHTML='<option value="">-- Select your name --</option>';
+      attendees.sort((a,b)=>a.name.localeCompare(b.name)).forEach(a=>{
+        const o=document.createElement('option'); o.value=a.name; o.textContent=a.name; sel.appendChild(o);
+      });
+    } else {
+      $('pickUserRow').style.display='none';
+    }
+  }
+
+  // Attendees
+  const aList=$('attendeesList');
+  if(!attendees.length){ aList.innerHTML='<div style="font-size:14px;color:#8C7A62">No one signed up yet — be the first!</div>'; return; }
+  aList.innerHTML='';
+  attendees.sort((a,b)=>(a.joinedAt||0)-(b.joinedAt||0)).forEach(a=>{
+    const parts=[];
+    if(a.crabLbs) parts.push(a.crabLbs+' lb'+(a.crabLbs!==1?'s':'')+' crab');
+    if(a.crawLbs) parts.push(a.crawLbs+' lb'+(a.crawLbs!==1?'s':'')+' crawdaddy');
+    if(a.sideDish) parts.push('"'+a.sideDish+'"');
+    const cost=personCost(a);
+    const row=document.createElement('div'); row.className='att-row';
+    row.innerHTML=`
+      <div class="avatar" style="background:${avatarBg(a.name)}">${initials(a.name)}</div>
+      <div class="att-info">
+        <div class="att-name">${a.name}</div>
+        <div class="att-guests">${a.guests>0?'+ '+a.guests+' guest'+(a.guests!==1?'s':''):'Just themselves'}</div>
+        ${parts.length?'<div class="att-items">Bringing: '+parts.join(', ')+(cost>0?' &middot; '+money(cost):'')+'</div>':''}
+      </div>
+      <button class="btn btn-danger" onclick="removeAttendee(${JSON.stringify(a.name)})">Remove</button>`;
+    aList.appendChild(row);
+  });
+}
+</script>
+</body>
+</html>
