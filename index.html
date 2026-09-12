@@ -187,11 +187,11 @@
       <h2>🦀 Your Crab Fest Order</h2>
       <div class="order-grid">
         <div class="order-field">
-          <label>Snow Crab Legs (lbs) — $10.99/lb</label>
+          <label>Snow Crab Legs (lbs) — $19.99/lb</label>
           <select id="crabLbs" onchange="saveOrder()"></select>
         </div>
         <div class="order-field">
-          <label>Crawdaddy (lbs) — $4.99/lb</label>
+          <label>Crawdaddy (lbs) — $9.99/lb</label>
           <select id="crawLbs" onchange="saveOrder()"></select>
         </div>
       </div>
@@ -250,10 +250,10 @@ const FIREBASE_CONFIG = {
 
 const CONFIGURED = !FIREBASE_CONFIG.apiKey.includes('YOUR_');
 const DB_PATH     = 'hunt_club_crab_fest_2026';
-const CRAB_PRICE  = 10.99;
-const CRAW_PRICE  = 4.99;
+const CRAB_PRICE  = 19.99;
+const CRAW_PRICE  = 9.99;
 const TAX_RATE    = 0.07;
-const MAX_LBS     = 20;
+const MAX_LBS     = 10;
 
 let db, attRef;
 let state = { attendees:{} };
