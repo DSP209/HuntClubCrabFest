@@ -273,7 +273,7 @@ function money(n){ return '$'+n.toFixed(2); }
 function personCost(a){
   const crab=(a.crabLbs||0)*CRAB_PRICE;
   const craw=(a.crawLbs||0)*CRAW_PRICE;
-  return crab+craw;
+  return (crab+craw)*(1+TAX_RATE);
 }
 
 // ── storage abstraction (Firebase or localStorage fallback) ──
